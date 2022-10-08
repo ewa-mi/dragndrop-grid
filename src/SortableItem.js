@@ -10,58 +10,40 @@ const SortableItem = (props) => {
     setNodeRef,
     transform,
     transition,
-    isDragging
+    isDragging,
   } = useSortable({ id: props.id });
 
   const style = {
+    cursor: "pointer",
     transform: CSS.Transform.toString(transform),
     transition,
-    width: "150px",
-    height: "100px",
-    backgroundColor: "white",
     margin: "10px",
-    zIndex: isDragging ? "100" : "auto",
+    textAlign: "center",
     opacity: isDragging ? 0.3 : 1,
     backgroundImage: `url(${
       images[Object.keys(images).find((el) => el === props.value)] || noPrev
     })`,
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
-    backgroundPosition: "50% 50%"
+    backgroundPosition: "50% 50%",
+  };
+
+  const panelStyle = {
+    ...style,
+    width: "150px",
+    height: "100px",
   };
 
   const featuredStyle = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    ...style,
     width: "200px",
     height: "200px",
-    margin: "10px",
-    zIndex: isDragging ? "100" : "auto",
-    opacity: isDragging ? 0.3 : 1,
-    textAlign: "center",
-    backgroundImage: `url(${
-      images[Object.keys(images).find((el) => el === props.value)] || noPrev
-    })`,
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "50% 50%"
   };
 
   const toplevelStyle = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    ...style,
     width: "200px",
     height: "100px",
-    margin: "10px",
-    zIndex: isDragging ? "100" : "auto",
-    opacity: isDragging ? 0.3 : 1,
-    textAlign: "center",
-    backgroundImage: `url(${
-      images[Object.keys(images).find((el) => el === props.value)] || noPrev
-    })`,
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "50% 50%"
   };
 
   const getItemStyle = (containerType) => {
@@ -71,14 +53,16 @@ const SortableItem = (props) => {
     if (containerType === "toplevel") {
       return toplevelStyle;
     }
-    return style;
+    return panelStyle;
   };
 
   return (
-    <div ref={setNodeRef} style={getItemStyle(props.containerType)}>
-      <button {...listeners} {...attributes}>
-        Drag handle
-      </button>
+    <div
+      ref={setNodeRef}
+      style={getItemStyle(props.containerType)}
+      {...listeners}
+      {...attributes}
+    >
       <h1 style={{ color: "white", textShadow: "2px 2px gray" }}>
         {props.value}
       </h1>

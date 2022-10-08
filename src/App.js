@@ -1,21 +1,15 @@
 import React, { useState } from "react";
 import {
   DndContext,
-  closestCenter,
-  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay
+  DragOverlay,
+  closestCenter,
 } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  rectSortingStrategy
-} from "@dnd-kit/sortable";
-
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import Container from "./Container";
 import { images, noPrev } from "./images";
 
@@ -24,33 +18,15 @@ const App = () => {
   const [items, setItems] = useState({
     container1: ["one", "two", "three", "four", "five"],
     container2: ["A", "B", "C", "D"],
-    container3: ["xx", "yy", "zz", "dd", "nn"]
+    container3: ["xx", "yy", "zz", "dd", "nn"],
   });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  // const handleDragStart = (event) => {
-  //   setActiveId(event.active.id);
-  // };
-
-  // const handleDragEnd = (event) => {
-  //   setActiveId(null);
-  //   const { active, over } = event;
-
-  //   if (active.id !== over.id) {
-  //     setItems((items) => {
-  //       const oldIndex = items.indexOf(active.id);
-  //       const newIndex = items.indexOf(over.id);
-
-  //       return arrayMove(items, oldIndex, newIndex);
-  //     });
-  //   }
-  // };
 
   function findContainer(id) {
     if (id in items) {
@@ -72,7 +48,6 @@ const App = () => {
     const { id } = active;
     const { id: overId } = over;
 
-    // Find the containers
     const activeContainer = findContainer(id);
     const overContainer = findContainer(overId);
 
@@ -88,7 +63,6 @@ const App = () => {
       const activeItems = prev[activeContainer];
       const overItems = prev[overContainer];
 
-      // Find the indexes for the items
       const activeIndex = activeItems.indexOf(id);
       const overIndex = overItems.indexOf(overId);
 
@@ -102,13 +76,13 @@ const App = () => {
       return {
         ...prev,
         [activeContainer]: [
-          ...prev[activeContainer].filter((item) => item !== active.id)
+          ...prev[activeContainer].filter((item) => item !== id),
         ],
         [overContainer]: [
           ...prev[overContainer].slice(0, newIndex),
           items[activeContainer][activeIndex],
-          ...prev[overContainer].slice(newIndex, prev[overContainer].length)
-        ]
+          ...prev[overContainer].slice(newIndex, prev[overContainer].length),
+        ],
       };
     });
   }
@@ -129,13 +103,17 @@ const App = () => {
       return;
     }
 
-    const activeIndex = items[activeContainer].indexOf(active.id);
+    const activeIndex = items[activeContainer].indexOf(id);
     const overIndex = items[overContainer].indexOf(overId);
 
     if (activeIndex !== overIndex) {
       setItems((items) => ({
         ...items,
-        [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex)
+        [overContainer]: arrayMove(
+          items[overContainer],
+          activeIndex,
+          overIndex
+        ),
       }));
     }
 
@@ -145,12 +123,11 @@ const App = () => {
   return (
     <div
       style={{
-        display: "flex"
+        display: "flex",
       }}
     >
       <DndContext
         sensors={sensors}
-        //collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -174,7 +151,7 @@ const App = () => {
             height: "600px",
             overflowY: "auto",
             backgroundColor: "lightgray",
-            marginTop: "20px"
+            marginTop: "20px",
           }}
         >
           <Container
@@ -183,23 +160,20 @@ const App = () => {
             containerType="panel"
           />
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
           {activeId ? (
             <div
               style={{
-                // TODO: This should have the image bckgr.
-
+                cursor: "grabbing",
                 width: "100px",
                 height: "100px",
-                backgroundColor: "white",
-                opacity: "0.5",
                 backgroundImage: `url(${
                   images[Object.keys(images).find((el) => el === activeId)] ||
                   noPrev
                 })`,
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
-                backgroundPosition: "50% 50%"
+                backgroundPosition: "50% 50%",
               }}
             ></div>
           ) : null}
